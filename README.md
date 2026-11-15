@@ -9,7 +9,7 @@ StockPilot provides a responsive web application, a native Android application, 
 - **Live Web Application:** https://stock-pilot-3d5ivv6ll-stock-pilot8.vercel.app
 - **Backend API:** https://stockpilot-gtj7.onrender.com
 - **API Documentation:** https://stockpilot-gtj7.onrender.com/api/docs
-- **Android APK:** [Download StockPilot APK](YOUR-APK-LINK)
+- **Android APK:** [Download StockPilot APK]([YOUR-APK-LINK](https://github.com/Binshad1/StockPilot/releases/download/v1.0.0/app-debug.apk))
 - **GitHub Repository:** https://github.com/Binshad1/StockPilot
 
 ## Features
