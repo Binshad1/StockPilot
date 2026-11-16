@@ -7,10 +7,85 @@
         <item name="colorSurface">@color/surface</item>
         <item name="colorOnSurface">@color/text</item>
         <item name="colorSurfaceVariant">@color/surface2</item>
-        <item name="colorOutline">@color/line</item>
+        <item name="colorOutline">@color/line2</item>
         <item name="colorError">@color/red</item>
         <item name="android:windowBackground">@color/bg</item>
         <item name="android:statusBarColor">@color/bg</item>
         <item name="android:navigationBarColor">@color/surface</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.StockPilot.Dialog</item>
+        <item name="bottomSheetDialogTheme">@style/ThemeOverlay.StockPilot.BottomSheet</item>
+    </style>
+
+    <!-- rounded dark dialogs -->
+    <style name="ThemeOverlay.StockPilot.Dialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="colorSurface">@color/surface2</item>
+        <item name="dialogCornerRadius">22dp</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.StockPilot.Dialog</item>
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearance.StockPilot.Dialog</item>
+    </style>
+    <style name="ShapeAppearance.StockPilot.Dialog" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">22dp</item>
+    </style>
+
+    <!-- bottom sheets with big rounded top corners -->
+    <style name="ThemeOverlay.StockPilot.BottomSheet" parent="ThemeOverlay.Material3.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/Widget.StockPilot.BottomSheet</item>
+    </style>
+    <style name="Widget.StockPilot.BottomSheet" parent="Widget.Material3.BottomSheet">
+        <item name="backgroundTint">@color/surface</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.StockPilot.Sheet</item>
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearance.StockPilot.Sheet</item>
+    </style>
+    <style name="ShapeAppearance.StockPilot.Sheet" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSizeTopLeft">26dp</item>
+        <item name="cornerSizeTopRight">26dp</item>
+        <item name="cornerSizeBottomLeft">0dp</item>
+        <item name="cornerSizeBottomRight">0dp</item>
+    </style>
+
+    <!-- bottom navigation active pill -->
+    <style name="Widget.StockPilot.NavIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:color">@color/amber_soft</item>
+    </style>
+
+    <!-- segmented toggle buttons (Sign in | Register, Stock in | Stock out ...) -->
+    <style name="Widget.StockPilot.Segment" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="backgroundTint">@color/seg_bg</item>
+        <item name="android:textColor">@color/seg_text</item>
+        <item name="strokeColor">@color/line2</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">13sp</item>
+    </style>
+
+    <style name="Text" parent="" />
+
+    <style name="Text.Eyebrow" parent="Text">
+        <item name="android:textColor">@color/muted</item>
+        <item name="android:textSize">10sp</item>
+        <item name="android:letterSpacing">0.14</item>
+        <item name="android:fontFamily">monospace</item>
+    </style>
+    <style name="Text.Label" parent="Text">
+        <item name="android:textColor">@color/muted</item>
+        <item name="android:textSize">10sp</item>
+        <item name="android:letterSpacing">0.12</item>
+        <item name="android:fontFamily">monospace</item>
+    </style>
+    <style name="Text.Heading" parent="Text">
+        <item name="android:textColor">@color/text</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+    <style name="Text.Chip" parent="Text">
+        <item name="android:fontFamily">monospace</item>
+        <item name="android:textSize">10sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0.04</item>
+        <item name="android:paddingStart">9dp</item>
+        <item name="android:paddingEnd">9dp</item>
+        <item name="android:paddingTop">3dp</item>
+        <item name="android:paddingBottom">3dp</item>
     </style>
 </resources>

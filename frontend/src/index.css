@@ -70,7 +70,7 @@ small { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }
 @keyframes pulse { 50% { opacity: .35; } }
 .bell em { position: absolute; top: 1px; right: 0; background: var(--red); color: #fff; font: 600 9px var(--mono); font-style: normal; min-width: 16px; height: 16px; display: grid; place-items: center; border-radius: 10px; }
 .menu-btn { display: none; }
-.content { padding: 30px 32px 48px; max-width: 1480px; margin: 0 auto; animation: rise .35s ease both; }
+.content { padding: 30px 32px 48px; max-width: 1480px; margin: 0 auto; animation: rise .35s ease; }
 @keyframes rise { from { opacity: 0; transform: translateY(8px); } }
 .bottom-nav, .scrim { display: none; }
 

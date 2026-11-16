@@ -4,4 +4,5 @@
     <item android:id="@+id/nav_products" android:icon="@drawable/ic_box" android:title="Products" />
     <item android:id="@+id/nav_orders" android:icon="@drawable/ic_cart" android:title="Orders" />
     <item android:id="@+id/nav_customers" android:icon="@drawable/ic_people" android:title="Customers" />
+    <item android:id="@+id/nav_more" android:icon="@drawable/ic_more" android:title="More" />
 </menu>

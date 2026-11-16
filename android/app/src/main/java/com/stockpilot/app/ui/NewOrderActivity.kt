@@ -27,19 +27,24 @@ import retrofit2.HttpException
 /** Create an order: pick a customer, set quantities with +/- and place it. The server deducts stock. */
 class NewOrderActivity : AppCompatActivity() {
 
+    companion object {
+        const val EXTRA_CUSTOMER_ID = "customerId"
+    }
+
     private lateinit var b: ActivityNewOrderBinding
     private var products: List<Product> = emptyList()
     private var customers: List<Customer> = emptyList()
     private val cart = linkedMapOf<String, Product>()      // productId -> product
     private val qty = mutableMapOf<String, Int>()          // productId -> quantity
     private var searchJob: Job? = null
+    private var selectedCustomerId: String? = null
     private lateinit var adapter: PickAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         b = ActivityNewOrderBinding.inflate(layoutInflater)
         setContentView(b.root)
-        b.toolbar.setNavigationOnClickListener { finish() }
+        b.btnBack.setOnClickListener { finish() }
 
         adapter = PickAdapter()
         b.recycler.layoutManager = LinearLayoutManager(this)
@@ -49,12 +54,11 @@ class NewOrderActivity : AppCompatActivity() {
             searchJob?.cancel()
             searchJob = lifecycleScope.launch { delay(350); loadProducts() }
         }
+        b.etDiscount.doAfterTextChanged { updateTotal() }
         loadCustomers()
         loadProducts()
         updateTotal()
     }
-
-    private var selectedCustomerId: String? = null
 
     private fun loadCustomers() = lifecycleScope.launch {
         try {
@@ -66,6 +70,11 @@ class NewOrderActivity : AppCompatActivity() {
                     selectedCustomerId = if (pos == 0) null else customers[pos - 1].id
                 }
                 override fun onNothingSelected(p: AdapterView<*>?) {}
+            }
+            // opened from a customer's sheet? preselect them
+            intent.getStringExtra(EXTRA_CUSTOMER_ID)?.let { id ->
+                val index = customers.indexOfFirst { it.id == id }
+                if (index >= 0) b.spCustomer.setSelection(index + 1)
             }
         } catch (e: Exception) {
             Toast.makeText(this@NewOrderActivity, e.friendlyMessage(), Toast.LENGTH_LONG).show()
@@ -89,26 +98,32 @@ class NewOrderActivity : AppCompatActivity() {
         updateTotal()
     }
 
+    private fun discount(): Double = b.etDiscount.text.toString().toDoubleOrNull() ?: 0.0
+
+    private fun subtotal(): Double = cart.values.sumOf { it.price * (qty[it.id] ?: 0) }
+
     private fun updateTotal() {
-        val total = cart.values.sumOf { it.price * (qty[it.id] ?: 0) }
+        val sub = subtotal()
+        val disc = discount().coerceIn(0.0, sub)
         val units = qty.values.sum()
-        b.tvTotal.text = total.inr()
+        b.tvTotal.text = (sub - disc).inr()
         b.tvCount.text = "$units unit${if (units == 1) "" else "s"} · ${cart.size} product${if (cart.size == 1) "" else "s"}"
         b.btnPlace.isEnabled = cart.isNotEmpty()
     }
 
     private fun place() {
+        val disc = discount().coerceIn(0.0, subtotal())
         b.btnPlace.isEnabled = false
         b.btnPlace.text = "Placing…"
         lifecycleScope.launch {
             try {
                 val order = Net.api(this@NewOrderActivity).createOrder(
-                    NewOrderRequest(selectedCustomerId, cart.keys.map { OrderLine(it, qty.getValue(it)) }, 0.0)
+                    NewOrderRequest(selectedCustomerId, cart.keys.map { OrderLine(it, qty.getValue(it)) }, disc)
                 )
-                Toast.makeText(this@NewOrderActivity, "${order.orderNumber} created", Toast.LENGTH_LONG).show()
+                Toast.makeText(this@NewOrderActivity, "${order.orderNumber} created. Stock updated.", Toast.LENGTH_LONG).show()
                 finish()
             } catch (e: HttpException) {
-                // e.g. 409 "Insufficient stock" - show the server's message and reload fresh stock numbers
+                // e.g. 409 "Insufficient stock": show the server's message and reload fresh stock numbers
                 Toast.makeText(this@NewOrderActivity, e.friendlyMessage(), Toast.LENGTH_LONG).show()
                 b.btnPlace.text = "Place order"
                 b.btnPlace.isEnabled = cart.isNotEmpty()
@@ -131,13 +146,17 @@ class NewOrderActivity : AppCompatActivity() {
 
         override fun onBindViewHolder(h: VH, position: Int) {
             val p = products[position]
+            val count = qty[p.id] ?: 0
+            h.v.tvInitial.text = p.name.take(1).uppercase()
             h.v.tvTitle.text = p.name
-            h.v.tvSub.text = "${p.price.inr()} · ${p.stock} in stock"
-            h.v.tvQty.text = (qty[p.id] ?: 0).toString()
+            h.v.tvSub.text = if (p.stock <= 0) "${p.price.inr()} · out of stock" else "${p.price.inr()} · ${p.stock} in stock"
+            h.v.tvQty.text = count.toString()
             h.v.btnMinus.setOnClickListener { change(p, -1) }
             h.v.btnPlus.setOnClickListener { change(p, +1) }
-            h.v.btnPlus.isEnabled = p.stock > 0 && (qty[p.id] ?: 0) < p.stock
-            h.v.btnPlus.alpha = if (h.v.btnPlus.isEnabled) 1f else 0.3f
+            h.v.btnMinus.alpha = if (count > 0) 1f else 0.3f
+            val canAdd = p.stock > 0 && count < p.stock
+            h.v.btnPlus.isEnabled = canAdd
+            h.v.btnPlus.alpha = if (canAdd) 1f else 0.3f
         }
     }
 }

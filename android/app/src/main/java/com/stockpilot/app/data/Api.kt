@@ -9,9 +9,11 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.PATCH
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Path
 import retrofit2.http.Query
 import java.util.concurrent.TimeUnit
@@ -27,10 +29,14 @@ interface StockPilotApi {
     suspend fun products(
         @Query("q") q: String?,
         @Query("page") page: Int = 1,
-        @Query("limit") limit: Int = 50
+        @Query("limit") limit: Int = 50,
+        @Query("status") status: String? = null
     ): Page<Product>
 
     @POST("api/products") suspend fun addProduct(@Body body: NewProductRequest): Product
+
+    @PUT("api/products/{id}") suspend fun updateProduct(@Path("id") id: String, @Body body: UpdateProductRequest): Product
+    @DELETE("api/products/{id}") suspend fun deleteProduct(@Path("id") id: String)
 
     @POST("api/inventory/stock-in") suspend fun stockIn(@Body body: StockRequest)
     @POST("api/inventory/stock-out") suspend fun stockOut(@Body body: StockRequest)
@@ -43,18 +49,31 @@ interface StockPilotApi {
     ): Page<Customer>
 
     @POST("api/customers") suspend fun addCustomer(@Body body: NewCustomerRequest): Customer
+    @PUT("api/customers/{id}") suspend fun updateCustomer(@Path("id") id: String, @Body body: NewCustomerRequest): Customer
+    @DELETE("api/customers/{id}") suspend fun deleteCustomer(@Path("id") id: String)
 
     @GET("api/orders")
     suspend fun orders(
         @Query("q") q: String?,
         @Query("page") page: Int = 1,
-        @Query("limit") limit: Int = 50
+        @Query("limit") limit: Int = 50,
+        @Query("status") status: String? = null
     ): Page<Order>
 
     @POST("api/orders") suspend fun createOrder(@Body body: NewOrderRequest): Order
 
     @PATCH("api/orders/{id}/status")
     suspend fun setOrderStatus(@Path("id") id: String, @Body body: StatusRequest): Order
+
+    // ---- admin only (the server enforces this too) ----
+    @GET("api/users") suspend fun users(): List<TeamUser>
+    @POST("api/users") suspend fun addUser(@Body body: NewUserRequest): TeamUser
+    @PATCH("api/users/{id}") suspend fun patchUser(@Path("id") id: String, @Body body: UserPatch): TeamUser
+
+    @GET("api/reports/sales") suspend fun salesReport(@Query("from") from: String, @Query("to") to: String): SalesReport
+    @GET("api/reports/inventory") suspend fun inventoryReport(): InventoryReport
+
+    @PUT("api/auth/password") suspend fun changePassword(@Body body: PasswordRequest)
 }
 
 /** Stores the JWT and the signed-in user on the device. */

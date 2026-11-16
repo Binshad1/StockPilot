@@ -2,22 +2,32 @@ package com.stockpilot.app.ui
 
 import android.content.Intent
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.stockpilot.app.R
 import com.stockpilot.app.data.Net
 import com.stockpilot.app.data.Order
 import com.stockpilot.app.data.StatusRequest
 
 class OrdersFragment : ListFragment() {
     override val searchHint = "Search order no. or customer"
-    override val emptyText = "No orders yet"
+    override val emptyText = "No orders found"
     override val fabLabel = "New order"
+    override val filters = listOf("All" to "", "Pending" to "pending", "Completed" to "completed", "Cancelled" to "cancelled")
 
-    override suspend fun loadRows(query: String): List<Row> =
-        Net.api(requireContext()).orders(query.ifEmpty { null }).data.map { o ->
-            val tone = when (o.status) { "completed" -> "good"; "cancelled" -> "bad"; else -> "warn" }
+    private fun tone(status: String) = when (status) {
+        "completed" -> "good"
+        "cancelled" -> "bad"
+        else -> "warn"
+    }
+
+    override suspend fun loadRows(query: String, filter: String): List<Row> =
+        Net.api(requireContext()).orders(query.ifEmpty { null }, status = filter.ifEmpty { null }).data.map { o ->
             Row(
-                "${o.orderNumber} · ${o.customerName}",
-                "${o.items.sumOf { it.quantity }} items · ${o.createdAt.shortDate()}",
-                o.total.inr(), o.status.uppercase(), color(tone)
+                title = o.orderNumber,
+                sub = "${o.customerName} · ${o.items.sumOf { it.quantity }} items · ${o.createdAt.shortDate()}",
+                end = o.total.inr(),
+                chip = o.status.uppercase(),
+                chipColor = color(tone(o.status)),
+                badge = o.customerName.take(1).uppercase()
             ) { showOrder(o) }
         }
 
@@ -26,28 +36,30 @@ class OrdersFragment : ListFragment() {
     }
 
     private fun showOrder(o: Order) {
-        val lines = o.items.joinToString("\n") { "• ${it.name} × ${it.quantity}   ${(it.price * it.quantity).inr()}" }
-        val discount = if (o.discount > 0) "\nDiscount: −${o.discount.inr()}" else ""
-        val builder = MaterialAlertDialogBuilder(requireContext())
-            .setTitle(o.orderNumber)
-            .setMessage("${o.customerName}\n${o.createdAt.shortDate()} · ${o.status.uppercase()}\n\n$lines$discount\n\nTotal: ${o.total.inr()}")
-            .setNegativeButton("Close", null)
+        val ctx = requireContext()
+        val sheet = DetailSheet(ctx)
+            .title(o.orderNumber, "${o.customerName} · ${o.createdAt.shortDate()}")
+            .chip(o.status.uppercase(), color(tone(o.status)))
+
+        o.items.forEach { sheet.line("${it.name} × ${it.quantity}", (it.price * it.quantity).inr()) }
+        if (o.discount > 0) sheet.line("Discount", "− ${o.discount.inr()}")
+        sheet.line("Total", o.total.inr())
 
         if (o.status == "pending") {
-            builder.setPositiveButton("Mark completed") { _, _ -> changeStatus(o, "completed") }
+            sheet.action("Mark completed", ActionStyle.PRIMARY) { changeStatus(o, "completed") }
         }
         // Only admins may cancel (the API enforces this too). Cancelling puts the stock back.
         if (o.status != "cancelled" && isAdmin()) {
-            builder.setNeutralButton("Cancel order") { _, _ ->
-                MaterialAlertDialogBuilder(requireContext())
+            sheet.action("Cancel order", ActionStyle.DANGER, R.drawable.ic_delete) {
+                MaterialAlertDialogBuilder(ctx)
                     .setTitle("Cancel ${o.orderNumber}?")
-                    .setMessage("The items will be returned to stock.")
+                    .setMessage("The items will be returned to stock. This can't be undone.")
                     .setNegativeButton("Keep order", null)
                     .setPositiveButton("Cancel order") { _, _ -> changeStatus(o, "cancelled") }
                     .show()
             }
         }
-        builder.show()
+        sheet.show()
     }
 
     private fun changeStatus(o: Order, status: String) {

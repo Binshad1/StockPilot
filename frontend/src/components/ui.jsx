@@ -1,5 +1,5 @@
-import { useId } from 'react'
-import { useState } from 'react'
+import { useId, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { ChevronLeft, ChevronRight, Package, Search, X, TriangleAlert } from 'lucide-react'
 import { imgUrl } from '../api'
 import { useModalBehavior } from '../utils/hooks'
@@ -121,7 +121,9 @@ export function Pagination({ page, pages, total, limit, onChange }) {
 
 export function Modal({ title, subtitle, icon: Icon, onClose, children, footer, wide, drawer }) {
   useModalBehavior(onClose)
-  return (
+  // Rendered into <body> (a portal) so "position: fixed" is always relative to the screen,
+  // never to an animated page container.
+  return createPortal(
     <div className="overlay" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div className={`modal ${wide ? 'modal-wide' : ''} ${drawer ? 'modal-drawer' : ''}`} role="dialog" aria-modal="true" aria-label={title}>
         <header className="modal-head">
@@ -132,7 +134,8 @@ export function Modal({ title, subtitle, icon: Icon, onClose, children, footer, 
         <div className="modal-body">{children}</div>
         {footer && <footer className="modal-foot">{footer}</footer>}
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
 

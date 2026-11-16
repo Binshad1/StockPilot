@@ -44,6 +44,7 @@ data class Order(
 )
 
 data class Totals(
+    val completedOrders: Int?,
     val products: Int,
     val stockUnits: Int,
     val inventoryValue: Double,
@@ -56,7 +57,30 @@ data class Totals(
     val revenueMonth: Double
 )
 
-data class Dashboard(val totals: Totals, val lowStockItems: List<Product>)
+data class SalesDay(val date: String, val revenue: Double, val orders: Int)
+data class TopProduct(val name: String, val sku: String?, val quantity: Int, val revenue: Double?)
+data class Dashboard(
+    val totals: Totals,
+    val lowStockItems: List<Product>,
+    val sales: List<SalesDay>?,
+    val topProducts: List<TopProduct>?
+)
+
+// ---- Reports (admin) ----
+data class SalesSummary(val orders: Int, val revenue: Double, val discount: Double, val itemsSold: Int, val averageOrderValue: Double)
+data class CategorySales(val category: String, val quantity: Int, val revenue: Double)
+data class SalesReport(
+    val summary: SalesSummary,
+    val byDay: List<SalesDay>,
+    val topProducts: List<TopProduct>,
+    val byCategory: List<CategorySales>
+)
+data class InventorySummary(val products: Int, val units: Int, val value: Double, val lowStock: Int, val outOfStock: Int)
+data class CategoryStock(val category: String, val products: Int, val units: Int, val value: Double)
+data class InventoryReport(val summary: InventorySummary, val byCategory: List<CategoryStock>, val attention: List<Product>)
+
+// ---- Team (admin) ----
+data class TeamUser(val id: String, val name: String, val email: String, val role: String, val isActive: Boolean?, val createdAt: String?)
 
 // ---- Requests ----
 data class LoginRequest(val email: String, val password: String)
@@ -70,3 +94,7 @@ data class NewCustomerRequest(val name: String, val phone: String, val email: St
 data class OrderLine(val productId: String, val quantity: Int)
 data class NewOrderRequest(val customerId: String?, val items: List<OrderLine>, val discount: Double)
 data class StatusRequest(val status: String)
+data class UpdateProductRequest(val name: String, val sku: String, val category: String, val price: Double, val lowStockThreshold: Int)
+data class PasswordRequest(val currentPassword: String, val newPassword: String)
+data class NewUserRequest(val name: String, val email: String, val password: String, val role: String)
+data class UserPatch(val role: String? = null, val isActive: Boolean? = null)

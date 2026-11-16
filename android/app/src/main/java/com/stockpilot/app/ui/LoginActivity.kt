@@ -1,7 +1,11 @@
 package com.stockpilot.app.ui
 
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.style.ForegroundColorSpan
 import android.util.Patterns
 import android.view.View
 import android.view.inputmethod.InputMethodManager
@@ -31,20 +35,39 @@ class LoginActivity : AppCompatActivity() {
 
         b = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(b.root)
+
+        // "actually" in amber, like the web app
+        val headline = "Know what you have.\nSell what you actually have."
+        val span = SpannableString(headline)
+        val start = headline.indexOf("actually")
+        span.setSpan(ForegroundColorSpan(Color.parseColor("#F0A742")), start, start + "actually".length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        b.tvHeadline.text = span
+
         b.btnLogin.setOnClickListener { submit() }
-        b.tvToggle.setOnClickListener { setMode(!registerMode) }
-        setMode(false)
+        b.toggleMode.addOnButtonCheckedListener { _, id, isChecked ->
+            if (isChecked) setMode(id == b.btnModeRegister.id)
+        }
+        b.toggleMode.check(b.btnModeLogin.id)
+
+        // demo accounts so a reviewer can try both roles with one tap
+        b.btnDemoAdmin.setOnClickListener { fill("admin@stockpilot.com", "Admin@123") }
+        b.btnDemoStaff.setOnClickListener { fill("staff@stockpilot.com", "Staff@123") }
+    }
+
+    private fun fill(email: String, password: String) {
+        b.etEmail.setText(email)
+        b.etPassword.setText(password)
     }
 
     private fun setMode(register: Boolean) {
         registerMode = register
         b.tvError.visibility = View.GONE
         b.tilName.visibility = if (register) View.VISIBLE else View.GONE
-        b.tvTitle.text = if (register) "Create account." else "Sign in."
-        b.tvSub.text = if (register) "New accounts start as staff." else "Open your inventory workspace."
+        b.tvEyebrow.text = if (register) "◆ CREATE ACCOUNT" else "◆ WELCOME BACK"
+        b.tvTitle.text = if (register) "Get started." else "Sign in."
+        b.tvSub.text = if (register) "New accounts start as staff. An admin can change your role." else "Enter your details to open your workspace."
         b.btnLogin.text = if (register) "Create account" else "Sign in"
-        b.tvToggle.text = if (register) "Already have an account? Sign in" else "New here? Create an account"
-        b.tvDemo.visibility = if (register) View.GONE else View.VISIBLE
+        b.demoBox.visibility = if (register) View.GONE else View.VISIBLE
     }
 
     private fun submit() {

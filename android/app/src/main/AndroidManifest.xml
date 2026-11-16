@@ -21,6 +21,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".ui.MainActivity" android:exported="false" />
+        <activity android:name=".ui.ReportsActivity" android:exported="false" />
+        <activity android:name=".ui.TeamActivity" android:exported="false" />
         <activity
             android:name=".ui.NewOrderActivity"
             android:exported="false"
