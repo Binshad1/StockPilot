@@ -3,17 +3,6 @@
 <<<<<<< HEAD
 A full-stack inventory and order management system built for the Codebxo Full Stack Developer Internship assessment.
 
-StockPilot includes a responsive web application, a native Android application, and a REST API connected to a shared MongoDB database.
-
-## Project Links
-
-- **Live Web App:** https://stock-pilot-3d5ivv6ll-stock-pilot8.vercel.app
-- **Backend API:** https://stockpilot-gtj7.onrender.com
-- **API Documentation:** https://stockpilot-gtj7.onrender.com/api/docs
--- **Android APK:** [Download StockPilot APK](https://github.com/Binshad1/StockPilot/releases/download/v1.0.0/app-debug.apk)
-=======
-A full-stack inventory and order management system developed for the **Codebxo Full Stack Developer Internship Assessment**.
-
 StockPilot provides a responsive web application, a native Android application, and a REST API connected to a shared MongoDB database.
 
 ## Project Links
